@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <nav id="navbar"></nav>
+  <div class="container">
+    
+      <h2>Sign Up</h2>
+      <form>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+        <label><input type="radio" name="role" value="admin" required> Admin</label>
+        <label><input type="radio" name="role" value="user" required> User</label>
+        <button type="submit">Sign Up</button>
+      </form>
+    
+  </div>
+  <script src="../js/navbar.js"></script>
+  <script src="../js/signup.js"></script>
+</body>
+</html>
