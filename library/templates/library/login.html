@@ -1,0 +1,290 @@
+{% extends 'library/base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+<style>
+    .auth-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 200px);
+        padding: 2rem;
+    }
+
+    .auth-box {
+        background: #2c2c2c;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #666666, #404040);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .auth-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+
+    .auth-box h2 {
+        margin: 0 0 0.5rem 0;
+        color: #e0e0e0;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .auth-subtitle {
+        text-align: center;
+        color: #a0a0a0;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .auth-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #a0a0a0;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .input-wrapper input {
+        width: 100%;
+        padding: 12px 14px;
+        padding-left: 2.5rem;
+        border: 1px solid #404040;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: #333333;
+        color: #e0e0e0;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .input-wrapper input:focus {
+        border: 1.5px solid #666666;
+        outline: none;
+        box-shadow: 0 0 0 2px #404040;
+        background: #383838;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a0a0a0;
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .auth-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        background: #404040;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .auth-btn:hover {
+        background: #666666;
+        transform: translateY(-1px);
+    }
+
+    .auth-btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-icon {
+        transition: transform 0.2s ease;
+    }
+
+    .auth-btn:hover .btn-icon {
+        transform: translateX(4px);
+    }
+
+    .auth-links {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #a0a0a0;
+    }
+
+    .auth-link {
+        color: #e0e0e0;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .auth-link::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        bottom: -2px;
+        left: 0;
+        background-color: #e0e0e0;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.2s ease;
+    }
+
+    .auth-link:hover {
+        color: #ffffff;
+    }
+
+    .auth-link:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    .errorlist {
+        color: #ee9090;
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+    }
+
+    .helptext {
+        color: #a0a0a0;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    @media (max-width: 480px) {
+        .auth-container {
+            padding: 1rem;
+        }
+
+        .auth-box {
+            padding: 2rem;
+        }
+
+        .auth-icon {
+            font-size: 2.5rem;
+        }
+
+        .auth-box h2 {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <div class="auth-header">
+            <div class="auth-icon">📚</div>
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Please login to your account</p>
+        </div>
+        
+        <form method="post" class="auth-form" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}<br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-wrapper">
+                    <input type="text" name="username" id="username" required>
+                    <span class="input-icon">👤</span>
+                </div>
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" name="password" id="password" required>
+                    <span class="input-icon">🔒</span>
+                </div>
+                {% if form.password.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn auth-btn">
+                <span class="btn-text">Login</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+        
+        <div class="auth-links">
+            <p>Don't have an account? <a href="{% url 'register' %}" class="auth-link">Register here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %} 

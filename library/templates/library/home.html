@@ -1,0 +1,105 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2>Welcome to the Library Management System</h2>
+{% if user.is_authenticated %}
+    <p>Welcome, {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}!</p>
+    {% if user.is_superuser and stats %}
+        <div class="admin-dashboard">
+            <h3><span style="font-size:1.5rem;vertical-align:middle;">🛠️</span> Admin Dashboard</h3>
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">📚</div>
+                    <div class="dashboard-label">Total Books</div>
+                    <div class="dashboard-value">{{ stats.total_books }}</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">👥</div>
+                    <div class="dashboard-label">System Users</div>
+                    <div class="dashboard-value">{{ stats.total_regular_users }}</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">⚠</div>
+                    <div class="dashboard-label">Unavailable Books</div>
+                    <div class="dashboard-value">{{ stats.unavailable_books }}</div>
+                </div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'add_book' %}" class="btn">Add Book</a>
+                <a href="{% url 'book_list' %}" class="btn">Manage Books</a>
+                <a href="{% url 'borrowed_books' %}" class="btn">View All Borrowed Books</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="options">
+            <a href="{% url 'book_list' %}" class="btn">Browse Books</a>
+            <a href="{% url 'borrowed_books' %}" class="btn">My Borrowed Books</a>
+        </div>
+    {% endif %}
+{% else %}
+    <p>Please login or register to access the library services.</p>
+    <div class="options">
+        <a href="{% url 'login' %}" class="btn">Login</a>
+        <a href="{% url 'register' %}" class="btn">Register</a>
+    </div>
+{% endif %}
+<style>
+.admin-dashboard {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #232323;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+.dashboard-cards {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0 1.5rem 0;
+    justify-content: center;
+}
+.dashboard-card {
+    background: #303030;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    min-width: 160px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    transition: transform 0.2s;
+}
+.dashboard-card:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+}
+.dashboard-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+.dashboard-label {
+    color: #a0a0a0;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+.dashboard-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e0e0e0;
+}
+.dashboard-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+@media (max-width: 700px) {
+    .dashboard-cards {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .dashboard-card {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %} 

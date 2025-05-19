@@ -1,0 +1,128 @@
+{% extends 'library/base.html' %}
+
+{% block title %}Available Books{% endblock %}
+
+{% block content %}
+<h2>Available Books</h2>
+{% if user.is_superuser %}
+    <a href="{% url 'add_book' %}" class="btn add-book-btn-top">Add Book</a>
+{% endif %}
+<div id="books-container">
+    {% for book in books %}
+    <div class="book-card" data-book-id="{{ book.id }}">
+        <div class="book-card-content">
+            {% if book.image_url %}
+                <img src="{{ book.image_url }}" alt="{{ book.title }} Cover" class="book-cover">
+            {% else %}
+                <div class="book-cover placeholder-cover"></div>
+            {% endif %}
+            <div class="book-details">
+                <h3>{{ book.title }}</h3>
+                <p class="book-author">Author: {{ book.author }}</p>
+                <p class="book-description">{{ book.description|truncatechars:150 }}</p>
+                {% if book.description|length > 150 %}
+                    <button class="description-toggle-btn" data-book-id="{{ book.id }}">Read More</button>
+                {% endif %}
+                <div class="full-description" id="full-description-{{ book.id }}" style="display: none;">{{ book.description }}</div>
+
+                <p class="book-copies {% if book.available_copies == 0 %}no-copies-message{% endif %}">Available Copies: {{ book.available_copies }}</p>
+                
+                <div class="btn-container">
+                    {% if book.available_copies > 0 and not user.is_superuser %}
+                        <button class="btn borrow-btn" onclick="borrowBook({{ book.id }})">Borrow Book</button>
+                    {% elif book.available_copies == 0 %}
+                        <button class="btn no-copies-btn" disabled>No Copies Available</button>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        <a href="{% url 'edit_book' book.id %}" class="btn edit-btn">Edit</a>
+                        <a href="{% url 'delete_book' book.id %}" class="btn delete-btn" onclick="return confirm('Are you sure you want to delete this book?');">Delete</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.textContent = message;
+    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+
+async function borrowBook(bookId) {
+    try {
+        const response = await fetch('{% url "borrow_book" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ book_id: bookId })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showAlert(data.message, 'success');
+            // Update the UI
+            const bookCard = document.querySelector(`[data-book-id="${bookId}"]`);
+            const availableCopiesElement = bookCard.querySelector('.book-details .book-copies');
+            const currentCopies = parseInt(availableCopiesElement.textContent.split(': ')[1]);
+            availableCopiesElement.textContent = `Available Copies: ${currentCopies - 1}`;
+            
+            if (currentCopies - 1 === 0) {
+                const borrowBtn = bookCard.querySelector('.borrow-btn');
+                if (borrowBtn) {
+                    borrowBtn.disabled = true;
+                    borrowBtn.textContent = 'No Copies Available';
+                }
+            }
+        } else {
+            showAlert(data.message, 'error');
+        }
+    } catch (error) {
+        showAlert('An error occurred while borrowing the book', 'error');
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.querySelectorAll('.description-toggle-btn').forEach(button => {
+    button.addEventListener('click', () => {
+        const bookId = button.getAttribute('data-book-id');
+        const fullDescriptionDiv = document.getElementById(`full-description-${bookId}`);
+        const truncatedDescriptionP = button.previousElementSibling; 
+
+        if (fullDescriptionDiv.style.display === 'none') {
+            truncatedDescriptionP.style.display = 'none';
+            fullDescriptionDiv.style.display = 'block';
+            button.textContent = 'Read Less';
+        } else {
+            truncatedDescriptionP.style.display = 'block';
+            fullDescriptionDiv.style.display = 'none';
+            button.textContent = 'Read More';
+        }
+    });
+});
+
+</script>
+{% endblock %} 
